@@ -1,0 +1,19 @@
+{
+  "notes": [
+    {
+      "octave": 1,
+      "beat": 0.25,
+      "key": 0
+    },
+    {
+      "octave": 2,
+      "beat": 0.0625,
+      "key": 1
+    }
+  ],
+  "clef": "h",
+  "name": "untitled",
+  "tempo": 120,
+  "tonality": "C",
+  "timeSignature": "4/4"
+}

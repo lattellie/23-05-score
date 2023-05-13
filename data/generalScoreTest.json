@@ -1,0 +1,24 @@
+{
+    "notes": [
+        {
+            "octave": 0,
+            "beat": 0.25,
+            "key": 8
+        },
+        {
+            "octave": 1,
+            "beat": 4,
+            "key": 6
+        },
+        {
+            "octave": -1,
+            "beat": 0.0625,
+            "key": 4
+        }
+    ],
+    "clef": "l",
+    "name": "presto",
+    "tempo": 170,
+    "tonality": "B",
+    "timeSignature": "3/4"
+}
