@@ -1,8 +1,13 @@
 package ui;
 
+import model.Notes;
 import model.Score;
 import ui.tools.PianoPanel;
 
+import javax.sound.midi.MidiChannel;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Synthesizer;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -29,6 +34,10 @@ public class QuickEditor extends JFrame implements ActionListener, KeyListener {
     private Score score;
     private JPanel panel;
     private PianoPanel pianoPanel;
+    private Synthesizer synth;
+    private MidiChannel[] channels;
+    private Map<TempNote,Instant> notesList = new HashMap<>();
+
 
 
     public QuickEditor() {
@@ -46,6 +55,14 @@ public class QuickEditor extends JFrame implements ActionListener, KeyListener {
         setMinimumSize(new Dimension(WIDTH, HEIGHT / 10));
         setVisible(true);
         initializeKeyMap();
+        try {
+            synth = MidiSystem.getSynthesizer();
+            synth.open();
+            channels = synth.getChannels();
+            channels[0].programChange(1);
+        } catch (MidiUnavailableException e) {
+            System.out.println("midi synth unavailable exception");
+        }
     }
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new QuickEditor().setVisible(true));
@@ -93,11 +110,38 @@ public class QuickEditor extends JFrame implements ActionListener, KeyListener {
             isKeyPressed = true;
             activatedNotes.set(keyMap.get(keyCode),upDownPressed);
             Instant currentTimestamp = Instant.now();
-            // Print the current timestamp
-            System.out.println("Current timestamp: " + currentTimestamp);
+            TempNote tn = new TempNote(keyMap.get(keyCode), upDownPressed);
+            notesList.put(tn, currentTimestamp);
+//            System.out.println("Current timestamp: " + currentTimestamp);
+            produceSound(tn);
+//            System.out.println(notesList);
         }
         repaint();
 
+    }
+
+    private class TempNote {
+        protected int keyNum;
+        protected int octave;
+        public TempNote(int keyNum, int octave) {
+            this.keyNum = keyNum;
+            this.octave = octave;
+        }
+
+        public Notes getNotes(float beat) {
+            return new Notes(0,0,0);//stub
+        }
+    }
+    private void produceSound(TempNote tn) {
+        try {
+            int key = 48 + tn.octave * 12 + tn.keyNum;
+//            System.out.println(key);
+            channels[0].noteOn(key,50);
+//            Thread.sleep(50);
+//            channels[0].noteOff(key);
+        } catch (Exception e) {
+            System.out.println("interrupted exception");
+        }
     }
 
     @Override
