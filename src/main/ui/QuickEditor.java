@@ -46,11 +46,7 @@ public class QuickEditor extends JFrame implements KeyListener {
         this.met = met;
         basicConstructor();
     }
-    public QuickEditor() {
-        super("score editor");
-        this.met = new Metronome(false);
-        basicConstructor();
-    }
+
     private void basicConstructor() {
         score = new Score();
         setLayout(new BorderLayout());
@@ -75,42 +71,7 @@ public class QuickEditor extends JFrame implements KeyListener {
         }
     }
 
-    public static void main(String[] args) {
-//         piano = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                SwingUtilities.invokeLater(() -> new QuickEditor().setVisible(true));
-//            }
-//        });
-//
-//        metro = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                isRunning = true;
-//                try {
-//                    Synthesizer synth = MidiSystem.getSynthesizer();
-//                    synth.open();
-//
-//                    MidiChannel[] channels = synth.getChannels();
-//                    channels[9].programChange(0,0);
-//                    while (isRunning) {
-//                        channels[9].noteOn(36, 100);
-//                        metro.sleep(500);
-//                        channels[9].noteOff(36);
-//                    }
-//
-//                } catch (MidiUnavailableException e) {
-//                    throw new RuntimeException(e);
-//                } catch (InterruptedException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//        });
-//
-//        // Start the threads
-//        piano.start();
-//        metro.start();
-    }
+
 
     public ArrayList<Integer> getActivatedNotes() {
         return activatedNotes;
@@ -130,7 +91,9 @@ public class QuickEditor extends JFrame implements KeyListener {
         activatedNotes.add(null);
     }
 
-
+    public Map<TempNote, Instant> getNotesList() {
+        return notesList;
+    }
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -177,12 +140,8 @@ public class QuickEditor extends JFrame implements KeyListener {
     }
     private void produceSound(TempNote tn) {
         try {
-            System.out.println(met);
             int key = 60 + tn.octave * 12 + tn.keyNum;
-//            System.out.println(key);
             channels[0].noteOn(key,50);
-//            Thread.sleep(50);
-//            channels[0].noteOff(key);
         } catch (Exception e) {
             System.out.println("interrupted exception");
         }
@@ -203,7 +162,4 @@ public class QuickEditor extends JFrame implements KeyListener {
         repaint();
     }
 
-    private void switchMetroState() {
-//        isRunning
-    }
 }

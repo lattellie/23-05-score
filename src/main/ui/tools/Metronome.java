@@ -15,26 +15,34 @@ public class Metronome {
     private static int tempo;
     private Metronome() {
         tempo = 120;
-        basicConstructor(false);
+        basicConstructor(true);
     }
-    public Metronome(Boolean isRunning) {
-        tempo = 120;
-        basicConstructor(isRunning);
-    }
+
     public static Metronome getMet() {
         if (met == null) {
             met = new Metronome();
         }
         return met;
     }
+    public static Metronome getMet(int tem) {
+        if (met == null) {
+            met = new Metronome(true, tem);
+        } else {
+            tempo = tem;
+        }
+        return met;
+    }
 
-    public Metronome(Boolean isRunning, int tempo) {
-        tempo = tempo;
+    public static void setTempo(int tem) {
+        tempo = tem;
+    }
+    private Metronome(Boolean isRunning, int t) {
+        tempo = t;
         basicConstructor(isRunning);
     }
     public static void basicConstructor(Boolean isRunning) {
         try {
-            met.isRunning = isRunning;
+            Metronome.isRunning = isRunning;
             synth = MidiSystem.getSynthesizer();
             synth.open();
             channels = synth.getChannels();
@@ -42,7 +50,7 @@ public class Metronome {
 //            startMetro();
             while (isRunning) {
                 channels[9].noteOn(36, 100);
-                Thread.sleep((long) 60000/tempo);
+                OuterClass.getMetro().sleep((long) 60000/tempo);
                 channels[9].noteOff(36);
             }
         } catch (MidiUnavailableException e) {
@@ -60,6 +68,7 @@ public class Metronome {
     }
     public void setRunning(boolean b) {
         isRunning = b;
+        basicConstructor(b);
     }
     public void stopRunning() {
         isRunning = false;
