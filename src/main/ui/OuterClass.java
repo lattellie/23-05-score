@@ -14,7 +14,7 @@ public class OuterClass extends JFrame implements ActionListener {
     private Metronome met;
     private JButton finish;
     private JButton start;
-    private JButton stop;
+    private JButton pause;
     private JPanel panel;
     private JTextField tempoInsert;
     private static Thread piano;
@@ -79,15 +79,15 @@ public class OuterClass extends JFrame implements ActionListener {
         start = new JButton("start");
         start.setActionCommand("start");
         start.addActionListener(this);
-        stop = new JButton("stop");
-        stop.setActionCommand("stop");
-        stop.addActionListener(this);
+        pause = new JButton("stop");
+        pause.setActionCommand("stop");
+        pause.addActionListener(this);
         tempoInsert = new JTextField();
         tempoInsert.setColumns(20);
         panel.add(tempoInsert);
         panel.add(finish);
         panel.add(start);
-        panel.add(stop);
+        panel.add(pause);
     }
 
     @Override
@@ -113,6 +113,9 @@ public class OuterClass extends JFrame implements ActionListener {
             metro.suspend();
         } else if (e.getActionCommand() == "finish") {
             metro.stop();
+//            System.out.println(Metronome.getTempo());
+            QuickEditor.getEditedScore(Metronome.getTempo());
+            System.out.println(QuickEditor.getNoteMapList());
         }
     }
 }

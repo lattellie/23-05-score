@@ -26,7 +26,7 @@ public class PianoPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         ArrayList<Integer> activatedNotes = frame.getActivatedNotes();
-        int octave = frame.getUpDownPressed();
+        int octave = frame.getCurOctave();
         w = this.getWidth();
         h = this.getHeight();
         keyheight = h / 2;

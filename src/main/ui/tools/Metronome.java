@@ -33,6 +33,10 @@ public class Metronome {
         return met;
     }
 
+    public static int getTempo() {
+        return tempo;
+    }
+
     public static void setTempo(int tem) {
         tempo = tem;
     }
@@ -59,19 +63,11 @@ public class Metronome {
             throw new RuntimeException(e);
         }
     }
-    public void startMetro() throws InterruptedException{
-        while (isRunning) {
-            channels[9].noteOn(36, 100);
-            OuterClass.getMetro().sleep((long) 60000/tempo);
-            channels[9].noteOff(36);
-        }
-    }
-    public void setRunning(boolean b) {
-        isRunning = b;
-        basicConstructor(b);
-    }
-    public void stopRunning() {
-        isRunning = false;
-    }
-
+//    public void startMetro() throws InterruptedException{
+//        while (isRunning) {
+//            channels[9].noteOn(36, 100);
+//            OuterClass.getMetro().sleep((long) 60000/tempo);
+//            channels[9].noteOff(36);
+//        }
+//    }
 }

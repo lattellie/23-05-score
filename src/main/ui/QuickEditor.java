@@ -5,11 +5,15 @@ import model.Score;
 import ui.tools.Metronome;
 import ui.tools.PianoPanel;
 
-import javax.sound.midi.*;
+import javax.sound.midi.MidiChannel;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Synthesizer;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,19 +26,19 @@ public class QuickEditor extends JFrame implements KeyListener {
     private ArrayList<Integer> activatedNotes;
     //initialized to be all null, the last item(get 12, actual 13) is the rest
     private Map<Integer,Integer> keyMap;
-    private int upDownPressed = 0;
+    private int curOctave = 0;
     // 1 if up is pressed, 0 if nothing pressed, -1 if down is pressed
     private boolean isKeyPressed = false;
     // to make sure there's no double detection
     private boolean isUpDownPressed = false;
-    private Score score;
-    private JPanel panel;
+    private static Score score;
+//    private JPanel panel;
     private PianoPanel pianoPanel;
     private Synthesizer synth;
     private MidiChannel[] channels;
-    private Map<TempNote,Instant> notesList = new HashMap<>();
-
-    private Sequencer sequencer;
+    private static Map<TempNote,Instant> noteMapList;
+    private static ArrayList<TempNote> noteList;
+    private static ArrayList<Instant> timeList;
     private static boolean isRunning = false;
 
 //    static Thread piano;
@@ -44,18 +48,20 @@ public class QuickEditor extends JFrame implements KeyListener {
     public QuickEditor(Metronome met) {
         super("score editor");
         this.met = met;
+        noteMapList = new HashMap<>();
+        noteList = new ArrayList<>();
+        timeList = new ArrayList<>();
         basicConstructor();
     }
 
     private void basicConstructor() {
-        score = new Score();
         setLayout(new BorderLayout());
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(WIDTH, HEIGHT);
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
-        panel = new JPanel();
+//        panel = new JPanel();
         pianoPanel = new PianoPanel(this);
-        add(panel, BorderLayout.SOUTH);
+//        add(panel, BorderLayout.SOUTH);
         add(pianoPanel, BorderLayout.CENTER);
         addKeyListener(this);
         setMinimumSize(new Dimension(WIDTH, HEIGHT / 10));
@@ -77,8 +83,8 @@ public class QuickEditor extends JFrame implements KeyListener {
         return activatedNotes;
     }
 
-    public int getUpDownPressed() {
-        return upDownPressed;
+    public int getCurOctave() {
+        return curOctave;
     }
 
     private void initializeKeyMap() {
@@ -91,8 +97,8 @@ public class QuickEditor extends JFrame implements KeyListener {
         activatedNotes.add(null);
     }
 
-    public Map<TempNote, Instant> getNotesList() {
-        return notesList;
+    public static Map<TempNote, Instant> getNoteMapList() {
+        return noteMapList;
     }
 
     @Override
@@ -103,27 +109,37 @@ public class QuickEditor extends JFrame implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
-        if (keyCode == 83) {
-            met.setRunning(false);
-        }
+//        if (keyCode == 83) {
+//            met.setRunning(false);
+//        }
         if (!isUpDownPressed && keyCode == 38 || keyCode == 40) {
             isUpDownPressed = true;
-            if (Math.abs(upDownPressed + 39-keyCode) <= 3) {
-                upDownPressed += 39-keyCode;
+            if (Math.abs(curOctave + 39-keyCode) <= 3) {
+                curOctave += 39-keyCode;
             }
         }
         if (!isKeyPressed && keyMap.get(keyCode) != null) {
             isKeyPressed = true;
-            activatedNotes.set(keyMap.get(keyCode),upDownPressed);
+            activatedNotes.set(keyMap.get(keyCode), curOctave);
             Instant currentTimestamp = Instant.now();
-            TempNote tn = new TempNote(keyMap.get(keyCode), upDownPressed);
-            notesList.put(tn, currentTimestamp);
+            TempNote tn = new TempNote(keyMap.get(keyCode), curOctave);
+            noteMapList.put(tn, currentTimestamp);
+            noteList.add(tn);
+            timeList.add(currentTimestamp);
 //            System.out.println("Current timestamp: " + currentTimestamp);
             produceSound(tn);
 //            System.out.println(notesList);
         }
         repaint();
 
+    }
+
+    public static ArrayList<TempNote> getNoteList() {
+        return noteList;
+    }
+
+    public static ArrayList<Instant> getTimeList() {
+        return timeList;
     }
 
     private class TempNote {
@@ -150,9 +166,6 @@ public class QuickEditor extends JFrame implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
         int keyCode = e.getKeyCode();
-        if (keyCode == 83) {
-            met.setRunning(false);
-        }
         if (keyCode == 38 || keyCode == 40) {
             isUpDownPressed = false;
         } else if (keyMap.get(keyCode) != null) {
@@ -160,6 +173,22 @@ public class QuickEditor extends JFrame implements KeyListener {
             activatedNotes.set(keyMap.get(keyCode),null);
         }
         repaint();
+    }
+
+    public static Score getEditedScore(int tempo) {
+        score = new Score();
+        double minSplit = (double) (60.0/tempo);
+        for (int i=0; i<noteList.size()-1; i++) {
+            Duration d = Duration.between(timeList.get(i),timeList.get(i+1));
+            double sec = d.toMillis()*0.001;
+//            System.out.println(timeList.get(i)+"+"+timeList.get(i+1)+"="+sec);
+//            System.out.println(sec);
+//            System.out.println(minSplit);
+            int beat = (int) Math.round(sec/minSplit);
+            System.out.println(sec+"/"+minSplit+"="+beat);
+//            System.out.println(beat);
+        }
+        return null;
     }
 
 }
