@@ -142,7 +142,7 @@ public class QuickEditor extends JFrame implements KeyListener {
         return timeList;
     }
 
-    private class TempNote {
+    protected static class TempNote {
         protected int keyNum;
         protected int octave;
         public TempNote(int keyNum, int octave) {
@@ -151,10 +151,10 @@ public class QuickEditor extends JFrame implements KeyListener {
         }
 
         public Notes getNotes(float beat) {
-            return new Notes(0,0,0);//stub
+            return new Notes(keyNum,beat,octave);//stub
         }
     }
-    private void produceSound(TempNote tn) {
+    public void produceSound(TempNote tn) {
         try {
             int key = 60 + tn.octave * 12 + tn.keyNum;
             channels[0].noteOn(key,50);
@@ -185,10 +185,12 @@ public class QuickEditor extends JFrame implements KeyListener {
 //            System.out.println(sec);
 //            System.out.println(minSplit);
             int beat = (int) Math.round(sec/minSplit);
-            System.out.println(sec+"/"+minSplit+"="+beat);
+//            System.out.println(sec+"/"+minSplit+"="+beat);
+            score.addNotes(noteList.get(i).getNotes(0.0625f*beat));
+//            ScoreEditor4.setScore(score);
 //            System.out.println(beat);
         }
-        return null;
+        return score;
     }
 
 }

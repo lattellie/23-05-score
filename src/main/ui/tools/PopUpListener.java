@@ -22,7 +22,5 @@ public class PopUpListener implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         OuterClass oc = new OuterClass();
-//        JFrame quick = new QuickEditor();
-//        quick.setVisible(true);
     }
 }

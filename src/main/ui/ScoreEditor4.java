@@ -26,7 +26,7 @@ import java.util.List;
 
 // the ui of the project
 public class ScoreEditor4 extends JFrame implements ActionListener, WindowListener {
-    private Score score;
+    private static Score score;
     private static final int WIDTH = 1200;
     private static final int HEIGHT = 800;
     private static final String[] RIGHT_TONES = new String[]{"C#","Eb","F#","Ab","Bb"};
@@ -102,6 +102,10 @@ public class ScoreEditor4 extends JFrame implements ActionListener, WindowListen
         }
 
         synth.close();
+    }
+
+    public static void setScore(Score s) {
+        score = s;
     }
 
     // EFFECTS: create a popup window
@@ -333,6 +337,7 @@ public class ScoreEditor4 extends JFrame implements ActionListener, WindowListen
             label.setText("unable to load file");
         }
     }
+
 
     // EFFECTS: saves the score to file
     private void saveScore() {
