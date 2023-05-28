@@ -181,14 +181,8 @@ public class QuickEditor extends JFrame implements KeyListener {
         for (int i=0; i<noteList.size()-1; i++) {
             Duration d = Duration.between(timeList.get(i),timeList.get(i+1));
             double sec = d.toMillis()*0.001;
-//            System.out.println(timeList.get(i)+"+"+timeList.get(i+1)+"="+sec);
-//            System.out.println(sec);
-//            System.out.println(minSplit);
             int beat = (int) Math.round(sec/minSplit);
-//            System.out.println(sec+"/"+minSplit+"="+beat);
             score.addNotes(noteList.get(i).getNotes(0.0625f*beat));
-//            ScoreEditor4.setScore(score);
-//            System.out.println(beat);
         }
         return score;
     }

@@ -20,10 +20,14 @@ public class OuterClass extends JFrame implements ActionListener {
     private JButton pause;
     private JPanel panel;
     private JTextField tempoInsert;
-    private JTextField beatInsert;
+    private JComboBox<Integer> beatInsert;
+    private JComboBox<Integer> flatSharpNumber;
+    private JComboBox<Character> flatSharp;
     private JLabel outputstring;
     private static Thread piano;
     private static Thread metro;
+    private int[] appeared = new int[]{0,0,0,0,0,0,0};;
+    // appeared is 0000000 if it's C maj; 1 if #, -1 if b
 
     public OuterClass() {
         super("button window");
@@ -31,7 +35,6 @@ public class OuterClass extends JFrame implements ActionListener {
         metro = new Thread(new Runnable() {
             @Override
             public void run() {
-//                met = Metronome.getMet();
                 Metronome.getMet();
             }
         });
@@ -80,13 +83,16 @@ public class OuterClass extends JFrame implements ActionListener {
         pause.addActionListener(this);
         tempoInsert = new JTextField();
         tempoInsert.setColumns(10);
-        beatInsert = new JTextField();
-        beatInsert.setColumns(10);
+        beatInsert = new JComboBox<>(new Integer[]{1,2,4});
+        flatSharpNumber = new JComboBox<>(new Integer[]{0,1,2,3,4,5,6,7});
+        flatSharp = new JComboBox<>(new Character[]{'#','b'});
         outputstring = new JLabel();
         outputstring.setText("enter beat for metronome & how many 16th note is in that beat (default = 1)");
         panel.add(outputstring);
         panel.add(tempoInsert);
         panel.add(beatInsert);
+        panel.add(flatSharpNumber);
+        panel.add(flatSharp);
         panel.add(finish);
         panel.add(start);
         panel.add(pause);
@@ -96,29 +102,20 @@ public class OuterClass extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand()=="start") {
             int tem;
-            int beat;
+            int beat = (int) beatInsert.getSelectedItem();
+            setFlatSharp();
             try {
                 tem = Integer.parseInt(tempoInsert.getText());
             } catch (NumberFormatException er) {
                 tem = 120;
             }
-            try {
-                beat = Integer.parseInt(beatInsert.getText());
-            } catch (NumberFormatException er) {
-                beat = 1;
-            }
-            if (beat != 4 && beat != 2) {
-                Metronome.setTempo(tem,1);
-            } else {
-                Metronome.setTempo(tem,beat);
-            }
+            Metronome.setTempo(tem,beat);
             try {
                 System.out.println(Metronome.getTempo());
                 metro.start();
             } catch (IllegalThreadStateException err) {
                 metro.resume();
             }
-
             System.out.println("start");
         } else if (e.getActionCommand() == "stop") {
             System.out.println("stop");
@@ -128,6 +125,21 @@ public class OuterClass extends JFrame implements ActionListener {
             Score sc = QuickEditor.getEditedScore(Metronome.getTempo()*4);
             toRobot(sc);
         }
+    }
+
+    private void setFlatSharp() {
+        // 1 if # -1 if b
+        int flatsharp = -2 * flatSharp.getSelectedIndex() + 1;
+        int fsNum = (int) flatSharpNumber.getSelectedItem();
+//        int[] sharp = new int[]{4,1,5,2,6,3,7};
+//        int[] flat = new int[]{7,3,6,2,5,1,4};
+        int[][] fsIndex = new int[][]{{4,1,5,2,6,3,7},{7,3,6,2,5,1,4}};
+        int[] fsCur = fsIndex[flatSharp.getSelectedIndex()];
+        for (int i=0;i<fsNum;i++) {
+            appeared[fsCur[i]-1] = flatsharp;
+        }
+        System.out.println(printArray(appeared));
+
     }
 
     private void toRobot(Score sc) {
@@ -144,11 +156,8 @@ public class OuterClass extends JFrame implements ActionListener {
             notesArray.add(0,new Notes("B%10800"));
             ArrayList<int[]> keyList = new ArrayList<>();
             String tempString = "";
-            int[] appeared = new int[]{0,0,0,0,0,0,0};
             int[][] appearlist = new int[7][7];
-            for (int[] a:appearlist) {
-                Arrays.fill(a,0);
-            }
+            resetArray(appearlist);
             Integer curBar = 0;
             for (int i=1; i<notesArray.size(); i++) {
 //                String[] temp =  allKeyToStringOld(notesArray.get(i-1),notesArray.get(i),curBar,appeared);
@@ -183,9 +192,7 @@ public class OuterClass extends JFrame implements ActionListener {
         curBar += noteLength;
         if (curBar >= 17) {
             curBar = curBar - 16;
-            for (int[] a:appearlist) {
-                Arrays.fill(a,0);
-            }
+            resetArray(appearlist);
         }
 
         int oct = note.getOctave()+3;
@@ -229,60 +236,6 @@ public class OuterClass extends JFrame implements ActionListener {
             tempString += "v";
         }
         appearlist[oct][abcedf-1] = flatSharpList[relKey];
-        return tempString;
-    }
-
-    // curBar: 0~16; reset appeared when curBar
-    private String[] allKeyToStringOld(Notes prevNote, Notes note, Integer curBar, int[] appeared) {
-        String tempString = "";
-        int preKey = getActualKey(prevNote);
-        int curKey = getActualKey(note);
-        int ctrlTime = Math.round((float) (curKey-preKey)/7);
-        int noteLength = Math.round(note.getBeat()*16);
-        // deal with the note and beat
-        String[] temp = noteBeatToStringOld(note.getRelKey(), noteLength, curBar, appeared);
-        tempString += temp[0];
-        curBar = Integer.parseInt(temp[1]);
-        tempString += noteOctaveToString(ctrlTime);
-        return new String[]{tempString, String.valueOf(curBar)};
-    }
-
-    private String[] noteBeatToStringOld(int relKey, int noteLength, Integer curBar, int[] appeared) {
-        String tempString = "";
-        curBar += noteLength;
-        if (curBar >= 17) {
-            curBar = curBar - 16;
-            Arrays.fill(appeared,0);
-        }
-
-        String noteHeightString = noteHeightToStringOld(relKey, keyNumList[relKey], appeared);
-
-        if (noteLength <= 3) {
-            tempString = tempString + residual[noteLength] + noteHeightString;
-        } else if (noteLength <= 7) {
-            tempString = tempString + "5" + noteHeightString + residual[noteLength%4];
-        } else if (noteLength <= 11) {
-            tempString = tempString + "6" + noteHeightString + residual[noteLength%4];
-        } else if (noteLength <= 15) {
-            tempString = tempString + "6." + noteHeightString + residual[noteLength%4];
-        } else if (noteLength == 16) {
-            tempString = tempString + "7" + noteHeightString;
-        }
-        if (noteLength/4>0 && noteLength%4!=0) {
-            tempString += "t";
-        }
-        return new String[]{tempString, String.valueOf(curBar)};
-    }
-
-    private String noteHeightToStringOld(int relKey, int abcedf, int[] appeared) {
-        String tempString = "";
-        tempString += keyStringList[abcedf];
-        if (flatSharpList[relKey] - appeared[abcedf-1] == 1) {
-            tempString += "n";
-        } else if (flatSharpList[relKey] - appeared[abcedf-1] == -1) {
-            tempString += "v";
-        }
-        appeared[abcedf-1] = flatSharpList[relKey];
         return tempString;
     }
 
@@ -359,7 +312,11 @@ public class OuterClass extends JFrame implements ActionListener {
         }
 
     }
-
+    private void resetArray(int[][] appearlist) {
+        for (int i = 0; i < 7; i++) {
+            appearlist[i] = Arrays.copyOf(appeared,7);
+        }
+    }
     private String printArray(int[] appeared) {
         StringBuilder sb = new StringBuilder();
         for (int element : appeared) {
