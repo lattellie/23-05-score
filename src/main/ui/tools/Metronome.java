@@ -13,6 +13,8 @@ public class Metronome {
     private static Synthesizer synth;
     private static MidiChannel[] channels;
     private static int tempo = 120;
+    // the basic level of split
+    private static int beat = 1;
     private Metronome() {
         basicConstructor(true);
     }
@@ -33,11 +35,16 @@ public class Metronome {
     }
 
     public static int getTempo() {
-        return tempo;
+        return tempo/4*beat;
     }
 
     public static void setTempo(int tem) {
         tempo = tem;
+    }
+    public static void setTempo(int tem, int bt) {
+        tempo = tem;
+        beat = bt;
+
     }
     private Metronome(Boolean isRunning, int t) {
         tempo = t;
