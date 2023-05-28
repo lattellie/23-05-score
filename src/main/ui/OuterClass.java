@@ -128,12 +128,14 @@ public class OuterClass extends JFrame implements ActionListener {
             ArrayList<int[]> keyList = new ArrayList<>();
             String tempString = "";
             int[] appeared = new int[]{0,0,0,0,0,0,0};
+            int[][] appearlist = new int[7][7];
+            Arrays.fill(appearlist,0);
             Integer curBar = 0;
             for (int i=1; i<notesArray.size(); i++) {
-                String[] temp =  allKeyToString(notesArray.get(i-1),notesArray.get(i),curBar,appeared);
+//                String[] temp =  allKeyToStringOld(notesArray.get(i-1),notesArray.get(i),curBar,appeared);
+                String[] temp =  allKeyToString(notesArray.get(i-1),notesArray.get(i),curBar,appearlist);
                 tempString += temp[0];
                 curBar = Integer.parseInt(temp[1]);
-//                tempString += allKeyToType(notesArray.get(i-1),notesArray.get(i));
             }
             System.out.println(tempString);
             actualPrintingOut(tempString, robot);
@@ -142,27 +144,31 @@ public class OuterClass extends JFrame implements ActionListener {
         }
     }
 
-    private String[] allKeyToString(Notes prevNote, Notes note, Integer curBar, int[] appeared) {
+    private String[] allKeyToString(Notes prevNote, Notes note, Integer curBar, int[][] appearlist) {
         String tempString = "";
         int preKey = getActualKey(prevNote);
         int curKey = getActualKey(note);
         int ctrlTime = Math.round((float) (curKey-preKey)/7);
         int noteLength = Math.round(note.getBeat()*16);
         // deal with the note and beat
-        String[] temp = noteBeatToString2(note.getRelKey(), noteLength, curBar, appeared);
+        String[] temp = noteBeatToString(note, noteLength, curBar, appearlist);
         tempString += temp[0];
         curBar = Integer.parseInt(temp[1]);
         tempString += noteOctaveToString(ctrlTime);
         return new String[]{tempString, String.valueOf(curBar)};
     }
 
-    private String[] noteBeatToString2(int relKey, int noteLength, Integer curBar, int[] appeared) {
+    private String[] noteBeatToString(Notes note, int noteLength, Integer curBar, int[][] appearlist) {
+        int relKey = note.getRelKey();
         String tempString = "";
-        String noteHeightString = noteHeightToString2(relKey, keyNumList[relKey], appeared);
-        if (curBar + noteLength == 16) {
-            curBar = 0;
-            Arrays.fill(appeared,0);
+        curBar += noteLength;
+        if (curBar >= 17) {
+            curBar = curBar - 16;
+            Arrays.fill(appearlist,0);
         }
+
+        String noteHeightString = noteHeightToString(note, keyNumList[relKey], appearlist);
+
         if (noteLength <= 3) {
             tempString = tempString + residual[noteLength] + noteHeightString;
         } else if (noteLength <= 7) {
@@ -177,11 +183,66 @@ public class OuterClass extends JFrame implements ActionListener {
         if (noteLength/4>0 && noteLength%4!=0) {
             tempString += "t";
         }
-        curBar += noteLength;
         return new String[]{tempString, String.valueOf(curBar)};
     }
 
-    private String noteHeightToString2(int relKey, int abcedf, int[] appeared) {
+    private String noteHeightToString(Notes note, int abcedf, int[][] appearlist) {
+        int relKey = note.getRelKey();
+        int oct = note.getOctave()+3;
+        String tempString = "";
+        tempString += keyStringList[abcedf];
+        if (flatSharpList[relKey] - appearlist[oct][abcedf-1] == 1) {
+            tempString += "n";
+        } else if (flatSharpList[relKey] - appearlist[oct][abcedf-1] == -1) {
+            tempString += "v";
+        }
+        appearlist[oct][abcedf-1] = flatSharpList[relKey];
+        return tempString;
+    }
+
+    // curBar: 0~16; reset appeared when curBar
+    private String[] allKeyToStringOld(Notes prevNote, Notes note, Integer curBar, int[] appeared) {
+        String tempString = "";
+        int preKey = getActualKey(prevNote);
+        int curKey = getActualKey(note);
+        int ctrlTime = Math.round((float) (curKey-preKey)/7);
+        int noteLength = Math.round(note.getBeat()*16);
+        // deal with the note and beat
+        String[] temp = noteBeatToStringOld(note.getRelKey(), noteLength, curBar, appeared);
+        tempString += temp[0];
+        curBar = Integer.parseInt(temp[1]);
+        tempString += noteOctaveToString(ctrlTime);
+        return new String[]{tempString, String.valueOf(curBar)};
+    }
+
+    private String[] noteBeatToStringOld(int relKey, int noteLength, Integer curBar, int[] appeared) {
+        String tempString = "";
+        curBar += noteLength;
+        if (curBar >= 17) {
+            curBar = curBar - 16;
+            Arrays.fill(appeared,0);
+        }
+
+        String noteHeightString = noteHeightToStringOld(relKey, keyNumList[relKey], appeared);
+
+        if (noteLength <= 3) {
+            tempString = tempString + residual[noteLength] + noteHeightString;
+        } else if (noteLength <= 7) {
+            tempString = tempString + "5" + noteHeightString + residual[noteLength%4];
+        } else if (noteLength <= 11) {
+            tempString = tempString + "6" + noteHeightString + residual[noteLength%4];
+        } else if (noteLength <= 15) {
+            tempString = tempString + "6." + noteHeightString + residual[noteLength%4];
+        } else if (noteLength == 16) {
+            tempString = tempString + "7" + noteHeightString;
+        }
+        if (noteLength/4>0 && noteLength%4!=0) {
+            tempString += "t";
+        }
+        return new String[]{tempString, String.valueOf(curBar)};
+    }
+
+    private String noteHeightToStringOld(int relKey, int abcedf, int[] appeared) {
         String tempString = "";
         tempString += keyStringList[abcedf];
         if (flatSharpList[relKey] - appeared[abcedf-1] == 1) {
@@ -193,6 +254,31 @@ public class OuterClass extends JFrame implements ActionListener {
         return tempString;
     }
 
+    private static int[] keyNumList = new int[]{1, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7};
+    private static int[] flatSharpList = new int[]{0,1,0,-1,0,0,1,0,1,0,-1,0};
+    private static String[] keyStringList = new String[]{"s","c","d","e","f","g","a","b"};
+    private static String[] residual = new String[]{"","3","4","4."};
+
+    private String noteOctaveToString(int ctrlTime) {
+        String tempString ="";
+        if (ctrlTime > 0) {
+            tempString += "[x"+"n".repeat(ctrlTime)+"]x";
+        } else if (ctrlTime < 0) {
+            tempString += "[x"+"v".repeat(-ctrlTime)+"]x";
+        }
+        return tempString;
+    }
+
+
+    private int getActualKey(Notes note) {
+        if (note.getRelKey() == 13) {
+            return -1;
+        } else {
+            return keyNumList[note.getRelKey()] + (note.getOctave()+3)*7;
+        }
+    }
+
+// the rest is for turning string to robot
     private void actualPrintingOut(String tempString, Robot robot) {
         char[] strArray = tempString.toLowerCase(Locale.ROOT).toCharArray();
         Map<Character, Integer> charDict = new HashMap<>();
@@ -241,70 +327,13 @@ public class OuterClass extends JFrame implements ActionListener {
 
     }
 
-    private static int[] keyNumList = new int[]{1, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7};
-    private static int[] flatSharpList = new int[]{0,1,0,-1,0,0,1,0,1,0,-1,0};
-    private static String[] keyStringList = new String[]{"s","c","d","e","f","g","a","b"};
-    private static String[] residual = new String[]{"","3","4","4."};
-
-    private String allKeyToType(Notes prevNote, Notes note) {
-        String tempString = "";
-        int preKey = getActualKey(prevNote);
-        int curKey = getActualKey(note);
-        int ctrlTime = Math.round((float) (curKey-preKey)/7);
-        int noteLength = Math.round(note.getBeat()*16);
-        // deal with the note and beat
-        tempString += noteBeatToString(note.getRelKey(), noteLength);
-        tempString += noteOctaveToString(ctrlTime);
-        return tempString;
-    }
-
-    private String noteOctaveToString(int ctrlTime) {
-        String tempString ="";
-        if (ctrlTime > 0) {
-            tempString += "[x"+"n".repeat(ctrlTime)+"]x";
-        } else if (ctrlTime < 0) {
-            tempString += "[x"+"v".repeat(-ctrlTime)+"]x";
+    private String printArray(int[] appeared) {
+        StringBuilder sb = new StringBuilder();
+        for (int element : appeared) {
+            sb.append(element);
         }
-        return tempString;
-    }
-
-    private String noteBeatToString(int relKey, int noteLength) {
-        String tempString = "";
-        String noteHeightString = noteHeightToString(relKey, keyNumList[relKey]);
-        if (noteLength <= 3) {
-            tempString = tempString + residual[noteLength] + noteHeightString;
-        } else if (noteLength <= 7) {
-            tempString = tempString + "5" + noteHeightString + residual[noteLength%4];
-        } else if (noteLength <= 11) {
-            tempString = tempString + "6" + noteHeightString + residual[noteLength%4];
-        } else if (noteLength <= 15) {
-            tempString = tempString + "6." + noteHeightString + residual[noteLength%4];
-        } else if (noteLength == 16) {
-            tempString = tempString + "7" + noteHeightString;
-        }
-        if (noteLength/4>0 && noteLength%4!=0) {
-            tempString += "t";
-        }
-        return tempString;
-    }
-
-    private String noteHeightToString(int relKey, int abcedf) {
-        String tempString = "";
-        tempString += keyStringList[abcedf];
-        if (flatSharpList[relKey] == 1) {
-           tempString += "n";
-        } else if (flatSharpList[relKey] == -1) {
-            tempString += "v";
-        }
-        return tempString;
-    }
-
-    private int getActualKey(Notes note) {
-        if (note.getRelKey() == 13) {
-            return -1;
-        } else {
-            return keyNumList[note.getRelKey()] + (note.getOctave()+3)*7;
-        }
+        String str = sb.toString();
+        return str;
     }
 }
 
