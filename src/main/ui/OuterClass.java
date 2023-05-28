@@ -125,11 +125,11 @@ public class OuterClass extends JFrame implements ActionListener {
         try {
             Robot robot = new Robot();
             System.out.println("3 ");
-            robot.delay(500); // Delay before starting to type
+            robot.delay(1000); // Delay before starting to type
             System.out.println("2 ");
-            robot.delay(500);
+            robot.delay(1000);
             System.out.println("1 ");
-            robot.delay(500);
+            robot.delay(1000);
             System.out.println("ready to print out");
             ArrayList<Notes> notesArray= sc.getNotesArray();
             notesArray.add(0,new Notes("B%10800"));
@@ -158,6 +158,8 @@ public class OuterClass extends JFrame implements ActionListener {
         Map<Character, Integer> charDict = new HashMap<>();
         setCharDict(charDict);
         Set<Character> charSet = charDict.keySet();
+        System.out.println(charSet);
+        robot.delay(3000);
         // half = 1: [ occur; half = -1: ] occur
         int half = 0;
         for (char chr:strArray) {
@@ -172,12 +174,13 @@ public class OuterClass extends JFrame implements ActionListener {
                 } else if (half == -1) {
                     robot.keyRelease(charDict.get(chr));
                     half = 0;
-                } else if (half == 1) {
+                } else if (half == 0) {
                     robot.keyPress(charDict.get(chr));
                     robot.keyRelease(charDict.get(chr));
                 }
             }
         }
+        System.out.println("finish printing");
     }
 
     private void setCharDict(Map<Character, Integer> charDict) {
@@ -221,7 +224,7 @@ public class OuterClass extends JFrame implements ActionListener {
         if (ctrlTime > 0) {
             tempString += "[x"+"n".repeat(ctrlTime)+"]x";
         } else if (ctrlTime < 0) {
-            tempString += "[x"+"n".repeat(-ctrlTime)+"]x";
+            tempString += "[x"+"v".repeat(-ctrlTime)+"]x";
         }
         return tempString;
     }
