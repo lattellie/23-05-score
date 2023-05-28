@@ -22,6 +22,7 @@ public class OuterClass extends JFrame implements ActionListener {
     private JTextField tempoInsert;
     private static Thread piano;
     private static Thread metro;
+
     public OuterClass() {
         super("button window");
 
@@ -29,17 +30,7 @@ public class OuterClass extends JFrame implements ActionListener {
             @Override
             public void run() {
 //                met = Metronome.getMet();
-                met = Metronome.getMet();
-                int tem = Integer.parseInt(tempoInsert.getText());
-                if (tem > 20) {
-                    Metronome.setTempo(tem);
-                }
-//                if (tem > 20) {
-//                    met = Metronome.getMet(tem);
-//                } else {
-//                    met = Metronome.getMet();
-//                }
-                System.out.println(met);
+                Metronome.getMet();
             }
         });
 
@@ -104,6 +95,7 @@ public class OuterClass extends JFrame implements ActionListener {
             }
             try {
                 Metronome.setTempo(tem);
+                System.out.println(Metronome.getTempo());
                 metro.start();
             } catch (IllegalThreadStateException err) {
                 Metronome.setTempo(tem);
@@ -135,22 +127,70 @@ public class OuterClass extends JFrame implements ActionListener {
             notesArray.add(0,new Notes("B%10800"));
             ArrayList<int[]> keyList = new ArrayList<>();
             String tempString = "";
+            int[] appeared = new int[]{0,0,0,0,0,0,0};
+            Integer curBar = 0;
             for (int i=1; i<notesArray.size(); i++) {
-                tempString += allKeyToType(notesArray.get(i-1),notesArray.get(i));
+                String[] temp =  allKeyToString(notesArray.get(i-1),notesArray.get(i),curBar,appeared);
+                tempString += temp[0];
+                curBar = Integer.parseInt(temp[1]);
+//                tempString += allKeyToType(notesArray.get(i-1),notesArray.get(i));
             }
             System.out.println(tempString);
             actualPrintingOut(tempString, robot);
-//            robot.keyPress(KeyEvent.VK_A);
-//            robot.keyRelease(KeyEvent.VK_A);
-//
-//            robot.keyPress(KeyEvent.VK_E);
-//            robot.keyRelease(KeyEvent.VK_E);
-//
-//            robot.keyPress(KeyEvent.VK_C);
-//            robot.keyRelease(KeyEvent.VK_C);
         } catch (AWTException e) {
             e.printStackTrace();
         }
+    }
+
+    private String[] allKeyToString(Notes prevNote, Notes note, Integer curBar, int[] appeared) {
+        String tempString = "";
+        int preKey = getActualKey(prevNote);
+        int curKey = getActualKey(note);
+        int ctrlTime = Math.round((float) (curKey-preKey)/7);
+        int noteLength = Math.round(note.getBeat()*16);
+        // deal with the note and beat
+        String[] temp = noteBeatToString2(note.getRelKey(), noteLength, curBar, appeared);
+        tempString += temp[0];
+        curBar = Integer.parseInt(temp[1]);
+        tempString += noteOctaveToString(ctrlTime);
+        return new String[]{tempString, String.valueOf(curBar)};
+    }
+
+    private String[] noteBeatToString2(int relKey, int noteLength, Integer curBar, int[] appeared) {
+        String tempString = "";
+        String noteHeightString = noteHeightToString2(relKey, keyNumList[relKey], appeared);
+        if (curBar + noteLength == 16) {
+            curBar = 0;
+            Arrays.fill(appeared,0);
+        }
+        if (noteLength <= 3) {
+            tempString = tempString + residual[noteLength] + noteHeightString;
+        } else if (noteLength <= 7) {
+            tempString = tempString + "5" + noteHeightString + residual[noteLength%4];
+        } else if (noteLength <= 11) {
+            tempString = tempString + "6" + noteHeightString + residual[noteLength%4];
+        } else if (noteLength <= 15) {
+            tempString = tempString + "6." + noteHeightString + residual[noteLength%4];
+        } else if (noteLength == 16) {
+            tempString = tempString + "7" + noteHeightString;
+        }
+        if (noteLength/4>0 && noteLength%4!=0) {
+            tempString += "t";
+        }
+        curBar += noteLength;
+        return new String[]{tempString, String.valueOf(curBar)};
+    }
+
+    private String noteHeightToString2(int relKey, int abcedf, int[] appeared) {
+        String tempString = "";
+        tempString += keyStringList[abcedf];
+        if (flatSharpList[relKey] - appeared[abcedf-1] == 1) {
+            tempString += "n";
+        } else if (flatSharpList[relKey] - appeared[abcedf-1] == -1) {
+            tempString += "v";
+        }
+        appeared[abcedf-1] = flatSharpList[relKey];
+        return tempString;
     }
 
     private void actualPrintingOut(String tempString, Robot robot) {
@@ -158,7 +198,6 @@ public class OuterClass extends JFrame implements ActionListener {
         Map<Character, Integer> charDict = new HashMap<>();
         setCharDict(charDict);
         Set<Character> charSet = charDict.keySet();
-        System.out.println(charSet);
         robot.delay(3000);
         // half = 1: [ occur; half = -1: ] occur
         int half = 0;

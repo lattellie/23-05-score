@@ -12,9 +12,8 @@ public class Metronome {
     private static Metronome met;
     private static Synthesizer synth;
     private static MidiChannel[] channels;
-    private static int tempo;
+    private static int tempo = 120;
     private Metronome() {
-        tempo = 120;
         basicConstructor(true);
     }
 
