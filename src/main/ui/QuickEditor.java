@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO: set up rest
 public class QuickEditor extends JFrame implements KeyListener {
     private static final int WIDTH = 600;
     private static final int HEIGHT = 400;
