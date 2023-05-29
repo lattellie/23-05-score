@@ -29,6 +29,13 @@ public class OuterClass extends JFrame implements ActionListener {
     private int[] appeared = new int[]{0,0,0,0,0,0,0};;
     // appeared is 0000000 if it's C maj; 1 if #, -1 if b
 
+    private static int[] keyNumList = new int[]{1, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7};
+    private static int[] flatSharpList = new int[]{0,1,0,-1,0,0,1,0,1,0,-1,0};
+    private static String[] keyStringList = new String[]{"s","c","d","e","f","g","a","b"};
+    private static String[] residual = new String[]{"","3","4","4."};
+    private Notes previousNote = new Notes("B%10800");
+    private Integer curBar = 0;
+
     public OuterClass() {
         super("button window");
 
@@ -78,8 +85,8 @@ public class OuterClass extends JFrame implements ActionListener {
         start = new JButton("start");
         start.setActionCommand("start");
         start.addActionListener(this);
-        pause = new JButton("stop");
-        pause.setActionCommand("stop");
+        pause = new JButton("pause");
+        pause.setActionCommand("pause");
         pause.addActionListener(this);
         tempoInsert = new JTextField();
         tempoInsert.setColumns(10);
@@ -117,26 +124,37 @@ public class OuterClass extends JFrame implements ActionListener {
                 metro.resume();
             }
             System.out.println("start");
-        } else if (e.getActionCommand() == "stop") {
-            System.out.println("stop");
+        } else if (e.getActionCommand() == "pause") {
+            System.out.println("pause");
             metro.suspend();
+            Score sc = QuickEditor.getEditedScore(Metronome.getTempo()*4);
+            toRobot(sc);
+            QuickEditor.getNoteList().clear();
+            QuickEditor.getTimeList().clear();
         } else if (e.getActionCommand() == "finish") {
             metro.stop();
             Score sc = QuickEditor.getEditedScore(Metronome.getTempo()*4);
             toRobot(sc);
+            System.exit(0);
         }
     }
 
     private void setFlatSharp() {
         // 1 if # -1 if b
-        int flatsharp = -2 * flatSharp.getSelectedIndex() + 1;
+        int flatSharpOne = -2 * flatSharp.getSelectedIndex() + 1;
         int fsNum = (int) flatSharpNumber.getSelectedItem();
 //        int[] sharp = new int[]{4,1,5,2,6,3,7};
 //        int[] flat = new int[]{7,3,6,2,5,1,4};
         int[][] fsIndex = new int[][]{{4,1,5,2,6,3,7},{7,3,6,2,5,1,4}};
+        int[][] fsNumIndex = new int[][]{{1,1,2,2,3,4,4,5,5,6,6,7},{1,2,2,3,3,4,5,5,6,6,7,7}};
+        int[][] fsListIndex = new int[][]{{0,1,0,1,0,0,1,0,1,0,1,0},{0,-1,0,-1,0,0,-1,0,-1,0,-1,0}};
         int[] fsCur = fsIndex[flatSharp.getSelectedIndex()];
+        if (fsNum != 0) {
+            keyNumList = fsNumIndex[flatSharp.getSelectedIndex()];
+            flatSharpList = fsListIndex[flatSharp.getSelectedIndex()];
+        }
         for (int i=0;i<fsNum;i++) {
-            appeared[fsCur[i]-1] = flatsharp;
+            appeared[fsCur[i]-1] = flatSharpOne;
         }
         System.out.println(printArray(appeared));
 
@@ -153,18 +171,18 @@ public class OuterClass extends JFrame implements ActionListener {
             robot.delay(1000);
             System.out.println("ready to print out");
             ArrayList<Notes> notesArray= sc.getNotesArray();
-            notesArray.add(0,new Notes("B%10800"));
+            notesArray.add(0,previousNote);
             ArrayList<int[]> keyList = new ArrayList<>();
             String tempString = "";
             int[][] appearlist = new int[7][7];
             resetArray(appearlist);
-            Integer curBar = 0;
             for (int i=1; i<notesArray.size(); i++) {
 //                String[] temp =  allKeyToStringOld(notesArray.get(i-1),notesArray.get(i),curBar,appeared);
                 String[] temp =  allKeyToString(notesArray.get(i-1),notesArray.get(i),curBar,appearlist);
                 tempString += temp[0];
                 curBar = Integer.parseInt(temp[1]);
             }
+            previousNote = notesArray.get(notesArray.size()-2);
             System.out.println(tempString);
             actualPrintingOut(tempString, robot);
         } catch (AWTException e) {
@@ -239,10 +257,6 @@ public class OuterClass extends JFrame implements ActionListener {
         return tempString;
     }
 
-    private static int[] keyNumList = new int[]{1, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7};
-    private static int[] flatSharpList = new int[]{0,1,0,-1,0,0,1,0,1,0,-1,0};
-    private static String[] keyStringList = new String[]{"s","c","d","e","f","g","a","b"};
-    private static String[] residual = new String[]{"","3","4","4."};
 
     private String noteOctaveToString(int ctrlTime) {
         String tempString ="";
@@ -291,7 +305,6 @@ public class OuterClass extends JFrame implements ActionListener {
             }
         }
         System.out.println("finish printing");
-        System.exit(0);
     }
 
     private void setCharDict(Map<Character, Integer> charDict) {
