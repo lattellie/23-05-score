@@ -35,6 +35,7 @@ public class OuterClass extends JFrame implements ActionListener {
     private static String[] residual = new String[]{"","3","4","4."};
     private Notes previousNote = new Notes("B%10800");
     private Integer curBar = 0;
+    private int sixteenthAmount = 16;
     private
     int[][] appearlist = new int[7][7];
 
@@ -198,22 +199,42 @@ public class OuterClass extends JFrame implements ActionListener {
         int ctrlTime = Math.round((float) (curKey-preKey)/7);
         int noteLength = Math.round(note.getBeat()*16);
         // deal with the note and beat
-        String[] temp = noteBeatToString(note, noteLength, curBar, appearlist, ctrlTime);
+        String[] temp = new String[]{};
+        if (curKey == -1) {
+            int prevNoteRel = prevNote.getRelKey();
+            int preNoteABC = keyNumList[prevNoteRel]; // 1:C, 2:D ...etc
+            // set note's height to previous Note (without any modifying up / down)
+            int toBefs = appearlist[prevNote.getOctave()][preNoteABC-1];
+            // 1 if should be sharp, 0 if should be normal, -1 if should be flat
+            int newSetNote = prevNoteRel;
+            for (int i = -1; i<=1; i++) {
+                if (keyNumList[prevNoteRel+i] == preNoteABC && flatSharpList[prevNoteRel+i] == toBefs) {
+                    newSetNote = prevNoteRel+i;
+                }
+            }
+            note.setKey(newSetNote);
+            // given the note height we should set, the current position, the length of the note
+            // return {the string we should type, the new position}
+            temp = dealWithRest(newSetNote, curBar, noteLength);
+        } else {
+            temp = noteBeatToString(note, noteLength, curBar, appearlist, ctrlTime);
+        }
         tempString += temp[0];
         curBar = Integer.parseInt(temp[1]);
         tempString += noteOctaveToString(ctrlTime);
         return new String[]{tempString, String.valueOf(curBar)};
     }
 
-    private String[] noteBeatToString(Notes note, int noteLength, Integer curBar, int[][] appearlist, int ctrlTime) {
+    private String[] dealWithRest(int newSetNote, Integer curBar, int noteLength) {
+        // todo
+    }
+
+    // return {the string we need for typing that note, the current bar}
+    private String[] noteBeatToString (Notes note, int noteLength, Integer curBar, int[][] appearlist, int ctrlTime) {
         int relKey = note.getRelKey();
         String tempString = "";
         curBar += noteLength;
-        if (curBar >= 17) {
-            curBar = curBar - 16;
-            resetArray(appearlist);
-        }
-
+        curBar = checkResetCurBar(curBar, appearlist);
         int oct = note.getOctave()+3;
         int abcedf = keyNumList[relKey];
         String noteHeightString = "";
@@ -242,6 +263,14 @@ public class OuterClass extends JFrame implements ActionListener {
             tempString += "t";
         }
         return new String[]{tempString, String.valueOf(curBar)};
+    }
+
+    private Integer checkResetCurBar(Integer curBar, int[][] appearlist) {
+        if (curBar > sixteenthAmount) {
+            curBar = curBar - sixteenthAmount;
+            resetArray(appearlist);
+        }
+        return curBar;
     }
 
     private String noteHeightToString(Notes note, int abcedf, int[][] appearlist, int ctrlTime) {

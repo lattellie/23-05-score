@@ -24,7 +24,8 @@ import java.util.Map;
 public class QuickEditor extends JFrame implements KeyListener {
     private static final int WIDTH = 600;
     private static final int HEIGHT = 400;
-    private static final int[] NOTENUM = {49,81,50,87,51,52,82,53,84,54,89,55};
+    private static final int[] NOTENUM = {49,81,50,87,51,52,82,53,84,54,89,55,0,32};
+    // 0 is a stub
     private ArrayList<Integer> activatedNotes;
     //initialized to be all null, the last item(get 12, actual 13) is the rest
     private Map<Integer,Integer> keyMap;
@@ -38,7 +39,7 @@ public class QuickEditor extends JFrame implements KeyListener {
     private PianoPanel pianoPanel;
     private Synthesizer synth;
     private MidiChannel[] channels;
-    private static Map<TempNote,Instant> noteMapList;
+//    private static Map<TempNote,Instant> noteMapList;
     private static ArrayList<TempNote> noteList;
     private static ArrayList<Instant> timeList;
     private static boolean isRunning = false;
@@ -50,7 +51,7 @@ public class QuickEditor extends JFrame implements KeyListener {
     public QuickEditor(Metronome met) {
         super("score editor");
         this.met = met;
-        noteMapList = new HashMap<>();
+//        noteMapList = new HashMap<>();
         noteList = new ArrayList<>();
         timeList = new ArrayList<>();
         basicConstructor();
@@ -98,10 +99,51 @@ public class QuickEditor extends JFrame implements KeyListener {
         }
         activatedNotes.add(null);
     }
+//
+//    public static Map<TempNote, Instant> getNoteMapList() {
+//        return noteMapList;
+//    }
 
-    public static Map<TempNote, Instant> getNoteMapList() {
-        return noteMapList;
+    public static ArrayList<TempNote> getNoteList() {
+        return noteList;
     }
+
+    public static ArrayList<Instant> getTimeList() {
+        return timeList;
+    }
+
+    protected static class TempNote {
+        protected int keyNum;
+        protected int octave;
+        public TempNote(int keyNum, int octave) {
+            this.keyNum = keyNum;
+            this.octave = octave;
+        }
+
+        public Notes getNotes(float beat) {
+            return new Notes(keyNum,beat,octave);//stub
+        }
+    }
+    public void produceNoteSound(TempNote tn) {
+        try {
+            int key = 60 + tn.octave * 12 + tn.keyNum;
+            if (tn.keyNum == 13) {
+                channels[9].noteOn(77,50);
+            } else {
+                channels[0].noteOn(key,50);
+            }
+        } catch (Exception e) {
+            System.out.println("interrupted exception");
+        }
+    }
+
+//    public void produceRestSound() {
+//        try {
+//            channels[0].noteOn(8,50);
+//        } catch (Exception e) {
+//            System.out.println("interrupted exception");
+//        }
+//    }
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -125,44 +167,23 @@ public class QuickEditor extends JFrame implements KeyListener {
             activatedNotes.set(keyMap.get(keyCode), curOctave);
             Instant currentTimestamp = Instant.now();
             TempNote tn = new TempNote(keyMap.get(keyCode), curOctave);
-            noteMapList.put(tn, currentTimestamp);
+//            noteMapList.put(tn, currentTimestamp);
             noteList.add(tn);
             timeList.add(currentTimestamp);
 //            System.out.println("Current timestamp: " + currentTimestamp);
-            produceSound(tn);
+            produceNoteSound(tn);
 //            System.out.println(notesList);
         }
+//        if (!isKeyPressed && keyCode == 32) {
+//            isKeyPressed = true;
+//            Instant currentTimestamp = Instant.now();
+//            TempNote tn = new TempNote(-1, curOctave);
+//            noteList.add(tn);
+//            timeList.add(currentTimestamp);
+//            produceRestSound();
+//        }
         repaint();
 
-    }
-
-    public static ArrayList<TempNote> getNoteList() {
-        return noteList;
-    }
-
-    public static ArrayList<Instant> getTimeList() {
-        return timeList;
-    }
-
-    protected static class TempNote {
-        protected int keyNum;
-        protected int octave;
-        public TempNote(int keyNum, int octave) {
-            this.keyNum = keyNum;
-            this.octave = octave;
-        }
-
-        public Notes getNotes(float beat) {
-            return new Notes(keyNum,beat,octave);//stub
-        }
-    }
-    public void produceSound(TempNote tn) {
-        try {
-            int key = 60 + tn.octave * 12 + tn.keyNum;
-            channels[0].noteOn(key,50);
-        } catch (Exception e) {
-            System.out.println("interrupted exception");
-        }
     }
 
     @Override
