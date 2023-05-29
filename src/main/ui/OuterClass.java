@@ -35,6 +35,8 @@ public class OuterClass extends JFrame implements ActionListener {
     private static String[] residual = new String[]{"","3","4","4."};
     private Notes previousNote = new Notes("B%10800");
     private Integer curBar = 0;
+    private
+    int[][] appearlist = new int[7][7];
 
     public OuterClass() {
         super("button window");
@@ -42,6 +44,7 @@ public class OuterClass extends JFrame implements ActionListener {
         metro = new Thread(new Runnable() {
             @Override
             public void run() {
+                resetArray(appearlist);
                 Metronome.getMet();
             }
         });
@@ -174,15 +177,13 @@ public class OuterClass extends JFrame implements ActionListener {
             notesArray.add(0,previousNote);
             ArrayList<int[]> keyList = new ArrayList<>();
             String tempString = "";
-            int[][] appearlist = new int[7][7];
-            resetArray(appearlist);
             for (int i=1; i<notesArray.size(); i++) {
 //                String[] temp =  allKeyToStringOld(notesArray.get(i-1),notesArray.get(i),curBar,appeared);
                 String[] temp =  allKeyToString(notesArray.get(i-1),notesArray.get(i),curBar,appearlist);
                 tempString += temp[0];
                 curBar = Integer.parseInt(temp[1]);
             }
-            previousNote = notesArray.get(notesArray.size()-2);
+            previousNote = notesArray.get(notesArray.size()-1);
             System.out.println(tempString);
             actualPrintingOut(tempString, robot);
         } catch (AWTException e) {
@@ -329,6 +330,7 @@ public class OuterClass extends JFrame implements ActionListener {
         for (int i = 0; i < 7; i++) {
             appearlist[i] = Arrays.copyOf(appeared,7);
         }
+        System.out.println("array resetted");
     }
     private String printArray(int[] appeared) {
         StringBuilder sb = new StringBuilder();
