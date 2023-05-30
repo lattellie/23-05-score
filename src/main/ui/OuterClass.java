@@ -80,8 +80,10 @@ public class OuterClass extends JFrame implements ActionListener {
         return metro;
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new OuterClass().setVisible(true));
+    public static void main(String[] args) throws AWTException {
+        Robot robot = new Robot();
+        actualPrintingOut("6c4t[xv]x5c4t",robot);
+//        SwingUtilities.invokeLater(() -> new OuterClass().setVisible(true));
     }
     private void initStartStopButtons() {
         finish = new JButton("finish");
@@ -376,7 +378,7 @@ public class OuterClass extends JFrame implements ActionListener {
     }
 
 // the rest is for turning string to robot
-    private void actualPrintingOut(String tempString, Robot robot) {
+    private static void actualPrintingOut(String tempString, Robot robot) {
         char[] strArray = tempString.toLowerCase(Locale.ROOT).toCharArray();
         Map<Character, Integer> charDict = new HashMap<>();
         setCharDict(charDict);
@@ -405,11 +407,11 @@ public class OuterClass extends JFrame implements ActionListener {
         System.out.println("finish printing");
     }
 
-    private void setCharDict(Map<Character, Integer> charDict) {
+    private static void setCharDict(Map<Character, Integer> charDict) {
         char[] charNoteList = new char[]{'c','d','e','f','g','a','b'};
         int[] intNoteList = new int[]{67,68,69,70,71,65,66};
-        char[] charOtherList = new char[]{'l','r','n','v','x','<'};
-        int[] intOtherList = new int[]{37,39,38,40,17,8};
+        char[] charOtherList = new char[]{'l','r','n','v','x','<','t'};
+        int[] intOtherList = new int[]{37,39,38,40,17,8,84};
         char[] charNumList = new char[]{'1','2','3','4','5','6','7','.'};
         int[] intNumList = new int[]{49,50,51,52,53,54,55,46};
         for (int i=0;i<charNoteList.length;i++) {
