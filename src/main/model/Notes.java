@@ -12,11 +12,11 @@ public class Notes implements Writable {
     private int octave;
     private int key;
     private float beat;
-    private static final String[] STD = {"C", "C#", "D", "Eb", "E", "F", "F#", "G", "G#", "A", "Bb", "B", "C", "S"};
+    private static final String[] STD = {"C", "C#", "D", "Eb", "E", "F", "F#", "G", "G#", "A", "Bb", "B", "", "S"};
     private static final List<String> STANDARD_LIST = new ArrayList<String>(Arrays.asList(STD));
-    private static final String[] SHARP = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "C", "S"};
+    private static final String[] SHARP = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B", "", "S"};
     private static final List<String> SHARP_LIST = new ArrayList<String>(Arrays.asList(SHARP));
-    private static final String[] FLAT = {"C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B", "C", "S"};
+    private static final String[] FLAT = {"C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B", "", "S"};
     private static final List<String> FLAT_LIST = new ArrayList<String>(Arrays.asList(FLAT));
     private static final List<String> C_MAJOR = Arrays.asList(STD);
 

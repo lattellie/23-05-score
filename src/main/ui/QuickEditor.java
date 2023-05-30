@@ -116,12 +116,16 @@ public class QuickEditor extends JFrame implements KeyListener {
         protected int keyNum;
         protected int octave;
         public TempNote(int keyNum, int octave) {
-            this.keyNum = keyNum;
+            if (keyNum == 12) {
+                this.keyNum = 0;
+            } else {
+                this.keyNum = keyNum;
+            }
             this.octave = octave;
         }
 
         public Notes getNotes(float beat) {
-            return new Notes(keyNum,beat,octave);//stub
+            return new Notes(keyNum,beat,octave);
         }
     }
     public void produceNoteSound(TempNote tn) {

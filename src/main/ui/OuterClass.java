@@ -12,7 +12,7 @@ import java.util.*;
 
 @SuppressWarnings("ALL")
 public class OuterClass extends JFrame implements ActionListener {
-    private static final int WIDTH = 500;
+    private static final int WIDTH = 550;
     private static final int HEIGHT = 100;
     private Metronome met;
     private JButton finish;
@@ -23,6 +23,7 @@ public class OuterClass extends JFrame implements ActionListener {
     private JComboBox<Integer> beatInsert;
     private JComboBox<Integer> flatSharpNumber;
     private JComboBox<Character> flatSharp;
+    private JComboBox<String> clef;
     private JLabel outputstring;
     private static Thread piano;
     private static Thread metro;
@@ -33,7 +34,7 @@ public class OuterClass extends JFrame implements ActionListener {
     private static int[] flatSharpList = new int[]{0,1,0,-1,0,0,1,0,1,0,-1,0};
     private static String[] keyStringList = new String[]{"s","c","d","e","f","g","a","b"};
     private static String[] residual = new String[]{"","3","4","4."};
-    private Notes previousNote = new Notes("B%10800");
+    private Notes previousNote = null;
     private Integer curBar = 0;
     private int sixteenthAmount = 16;
     private
@@ -47,7 +48,7 @@ public class OuterClass extends JFrame implements ActionListener {
             public void run() {
                 resetArray(appearlist);
                 Metronome.getMet();
-            }
+            };
         });
 
         piano = new Thread(new Runnable() {
@@ -97,6 +98,7 @@ public class OuterClass extends JFrame implements ActionListener {
         beatInsert = new JComboBox<>(new Integer[]{1,2,4});
         flatSharpNumber = new JComboBox<>(new Integer[]{0,1,2,3,4,5,6,7});
         flatSharp = new JComboBox<>(new Character[]{'#','b'});
+        clef = new JComboBox<>(new String[]{"Treble","Bass"});
         outputstring = new JLabel();
         outputstring.setText("enter beat for metronome & how many 16th note is in that beat (default = 1)");
         panel.add(outputstring);
@@ -104,6 +106,7 @@ public class OuterClass extends JFrame implements ActionListener {
         panel.add(beatInsert);
         panel.add(flatSharpNumber);
         panel.add(flatSharp);
+        panel.add(clef);
         panel.add(finish);
         panel.add(start);
         panel.add(pause);
@@ -112,6 +115,13 @@ public class OuterClass extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand()=="start") {
+            if (previousNote == null) {
+                if (clef.getSelectedItem()=="Treble") {
+                    previousNote = new Notes("B%10800");
+                } else if (clef.getSelectedItem()=="Bass"){
+                    previousNote = new Notes("D%108-1");
+                }
+            }
             int tem;
             int beat = (int) beatInsert.getSelectedItem();
             setFlatSharp();
