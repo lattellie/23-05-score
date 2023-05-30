@@ -28,7 +28,7 @@ public class OuterClass extends JFrame implements ActionListener {
     private static Thread metro;
     private int[] appeared = new int[]{0,0,0,0,0,0,0};;
     // appeared is 0000000 if it's C maj; 1 if #, -1 if b
-
+    private String[] sixteenToString = new String[]{"","3","4","4.","5","","","","6","","","","6.","","","","7"};
     private static int[] keyNumList = new int[]{1, 1, 2, 3, 3, 4, 4, 5, 5, 6, 7, 7};
     private static int[] flatSharpList = new int[]{0,1,0,-1,0,0,1,0,1,0,-1,0};
     private static String[] keyStringList = new String[]{"s","c","d","e","f","g","a","b"};
@@ -207,26 +207,84 @@ public class OuterClass extends JFrame implements ActionListener {
             int toBefs = appearlist[prevNote.getOctave()][preNoteABC-1];
             // 1 if should be sharp, 0 if should be normal, -1 if should be flat
             int newSetNote = prevNoteRel;
-            for (int i = -1; i<=1; i++) {
-                if (keyNumList[prevNoteRel+i] == preNoteABC && flatSharpList[prevNoteRel+i] == toBefs) {
-                    newSetNote = prevNoteRel+i;
+            for (int i = 0; i<12; i++) {
+                if (keyNumList[i] == preNoteABC && flatSharpList[i] == toBefs) {
+                    newSetNote = i;
                 }
             }
             note.setKey(newSetNote);
-            // given the note height we should set, the current position, the length of the note
-            // return {the string we should type, the new position}
+            note.setOctave(prevNote.getOctave());
             temp = dealWithRest(newSetNote, curBar, noteLength);
+            tempString += temp[0];
+            curBar = Integer.parseInt(temp[1]);
         } else {
             temp = noteBeatToString(note, noteLength, curBar, appearlist, ctrlTime);
+            tempString += temp[0];
+            curBar = Integer.parseInt(temp[1]);
+            tempString += noteOctaveToString(ctrlTime);
         }
-        tempString += temp[0];
-        curBar = Integer.parseInt(temp[1]);
-        tempString += noteOctaveToString(ctrlTime);
         return new String[]{tempString, String.valueOf(curBar)};
     }
 
-    private String[] dealWithRest(int newSetNote, Integer curBar, int noteLength) {
-        // todo
+    // given the note height we should set{0~12}, the current position, the length of the note
+    // return {the string we should type, the new position}
+    // space 32 back 8 left 37 right 39
+    private String[] dealWithRest(int newSetNote, Integer n, int r) {
+        ArrayList<Integer> splittedRest = new ArrayList<>();
+        int l = n+r;// l = n + r
+        if (n==0) {
+            splittedRest.addAll(fnForStartZero(r));
+        } else if (r == 1) {
+            splittedRest.add(1);
+        } else if (r == 2) {
+            splittedRest.add(1);
+            splittedRest.add(1);
+        } else if (l<sixteenthAmount) {
+            SplittingRest(n, splittedRest, l, 4);
+        } else {
+            SplittingRest(n, splittedRest, l, sixteenthAmount);
+        }
+        String tempString = restArrayToString(newSetNote, splittedRest);
+        return new String[]{tempString, String.valueOf(l%sixteenthAmount)};
+    }
+
+    private String restArrayToString(int newSetNote, ArrayList<Integer> splittedRest) {
+        int a = keyNumList[newSetNote]; // 1~7
+        String temp = "";
+        String keyString = keyStringList[a];// 'c'...~'b'
+        for (int length:splittedRest) {
+            temp += sixteenToString[length];
+            // length 1: 1/16, 2:1/8 ...etc
+            temp += keyString;
+            temp += "<";
+            temp += "r";
+        }
+        return temp;
+    }
+
+    private void SplittingRest(Integer n, ArrayList<Integer> splittedRest, int l, int unit) {
+        int end = l % unit;
+        int mid = (l -end- n)/unit;
+        int str = (l -end- n -unit*mid);
+        splittedRest.addAll(reverseOrder(fnForStartZero(str)));
+        for (int k = 0; k < mid; k++) {
+            splittedRest.add(unit);
+        }
+        splittedRest.addAll(fnForStartZero(end));
+    }
+
+    private ArrayList<Integer> reverseOrder(ArrayList<Integer> lst) {
+        Collections.reverse(lst);
+        return lst;
+    }
+    private ArrayList<Integer> fnForStartZero(int i) {
+        ArrayList<Integer> returnArray = new ArrayList<>();
+        for(int n = 8; n >=1; n/=2) {
+            if(i%(2*n)/n==1) {
+                returnArray.add(n);
+            }
+        }
+        return returnArray;
     }
 
     // return {the string we need for typing that note, the current bar}
@@ -340,8 +398,8 @@ public class OuterClass extends JFrame implements ActionListener {
     private void setCharDict(Map<Character, Integer> charDict) {
         char[] charNoteList = new char[]{'c','d','e','f','g','a','b'};
         int[] intNoteList = new int[]{67,68,69,70,71,65,66};
-        char[] charOtherList = new char[]{'l','r','n','v','x'};
-        int[] intOtherList = new int[]{37,39,38,40,17};
+        char[] charOtherList = new char[]{'l','r','n','v','x','<'};
+        int[] intOtherList = new int[]{37,39,38,40,17,8};
         char[] charNumList = new char[]{'1','2','3','4','5','6','7','.'};
         int[] intNumList = new int[]{49,50,51,52,53,54,55,46};
         for (int i=0;i<charNoteList.length;i++) {
