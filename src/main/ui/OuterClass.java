@@ -12,12 +12,13 @@ import java.util.*;
 
 @SuppressWarnings("ALL")
 public class OuterClass extends JFrame implements ActionListener {
-    private static final int WIDTH = 550;
-    private static final int HEIGHT = 100;
+    private static final int WIDTH = 400;
+    private static final int HEIGHT = 200;
     private Metronome met;
     private JButton finish;
     private JButton start;
     private JButton pause;
+    private JButton delete;
     private JPanel panel;
     private JTextField tempoInsert;
     private JComboBox<Integer> beatInsert;
@@ -81,9 +82,9 @@ public class OuterClass extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) throws AWTException {
-        Robot robot = new Robot();
-        actualPrintingOut("6c4t[xv]x5c4t",robot);
-//        SwingUtilities.invokeLater(() -> new OuterClass().setVisible(true));
+//        Robot robot = new Robot();
+//        actualPrintingOut("6c4t[xv]x5c4t",robot);
+        SwingUtilities.invokeLater(() -> new OuterClass().setVisible(true));
     }
     private void initStartStopButtons() {
         finish = new JButton("finish");
@@ -95,6 +96,9 @@ public class OuterClass extends JFrame implements ActionListener {
         pause = new JButton("pause");
         pause.setActionCommand("pause");
         pause.addActionListener(this);
+        delete = new JButton("discard");
+        delete.setActionCommand("delete");
+        delete.addActionListener(this);
         tempoInsert = new JTextField();
         tempoInsert.setColumns(10);
         beatInsert = new JComboBox<>(new Integer[]{1,2,4});
@@ -112,6 +116,7 @@ public class OuterClass extends JFrame implements ActionListener {
         panel.add(finish);
         panel.add(start);
         panel.add(pause);
+        panel.add(delete);
     }
 
     @Override
@@ -152,6 +157,11 @@ public class OuterClass extends JFrame implements ActionListener {
             Score sc = QuickEditor.getEditedScore(Metronome.getTempo()*4);
             toRobot(sc);
             System.exit(0);
+        } else if (e.getActionCommand()=="delete") {
+            metro.suspend();
+            QuickEditor.getNoteList().clear();
+            QuickEditor.getTimeList().clear();
+            metro.resume();
         }
     }
 
@@ -179,6 +189,32 @@ public class OuterClass extends JFrame implements ActionListener {
     private void toRobot(Score sc) {
         try {
             Robot robot = new Robot();
+
+            ArrayList<Notes> notesArray= sc.getNotesArray();
+            notesArray.add(0,previousNote);
+            ArrayList<int[]> keyList = new ArrayList<>();
+            String tempString = "";
+            Notes firstNote = notesArray.get(1);
+            System.out.println(firstNote.getAbsKey()+" "+firstNote.getBeat());
+            System.out.print("Enter the correct first beat: (in number of sixteenth): \n");
+            Scanner scanner = new Scanner(System.in);
+            String input = scanner.nextLine();
+            int resetBeat = (int) (firstNote.getBeat()*16);
+            try {
+                int a = Integer.parseInt(input);
+                resetBeat = a;
+            } catch (Exception e) {
+                System.out.println("exception!");
+            }
+            firstNote.setBeat(resetBeat*0.0625f);
+            System.out.println("set note to beat: " + firstNote.getBeat());
+            for (int i=1; i<notesArray.size(); i++) {
+//                String[] temp =  allKeyToStringOld(notesArray.get(i-1),notesArray.get(i),curBar,appeared);
+                String[] temp =  allKeyToString(notesArray.get(i-1),notesArray.get(i),curBar,appearlist);
+                tempString += temp[0];
+                curBar = Integer.parseInt(temp[1]);
+            }
+            System.out.println(tempString);
             System.out.println("3 ");
             robot.delay(1000); // Delay before starting to type
             System.out.println("2 ");
@@ -186,18 +222,7 @@ public class OuterClass extends JFrame implements ActionListener {
             System.out.println("1 ");
             robot.delay(1000);
             System.out.println("ready to print out");
-            ArrayList<Notes> notesArray= sc.getNotesArray();
-            notesArray.add(0,previousNote);
-            ArrayList<int[]> keyList = new ArrayList<>();
-            String tempString = "";
-            for (int i=1; i<notesArray.size(); i++) {
-//                String[] temp =  allKeyToStringOld(notesArray.get(i-1),notesArray.get(i),curBar,appeared);
-                String[] temp =  allKeyToString(notesArray.get(i-1),notesArray.get(i),curBar,appearlist);
-                tempString += temp[0];
-                curBar = Integer.parseInt(temp[1]);
-            }
             previousNote = notesArray.get(notesArray.size()-1);
-            System.out.println(tempString);
             actualPrintingOut(tempString, robot);
         } catch (AWTException e) {
             e.printStackTrace();

@@ -162,6 +162,9 @@ public class Notes implements Writable {
         this.beat = interpretBeatSlash(b);
     }
 
+    public void setBeat(float f) {
+        this.beat = f;
+    }
 
     // EFFECT: returns this as JSON object
     @Override

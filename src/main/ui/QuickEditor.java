@@ -37,6 +37,7 @@ public class QuickEditor extends JFrame implements KeyListener {
     private static Score score;
 //    private JPanel panel;
     private PianoPanel pianoPanel;
+    protected static boolean startPrinting = false;
     private Synthesizer synth;
     private MidiChannel[] channels;
 //    private static Map<TempNote,Instant> noteMapList;
@@ -198,6 +199,9 @@ public class QuickEditor extends JFrame implements KeyListener {
         } else if (keyMap.get(keyCode) != null) {
             isKeyPressed = false;
             activatedNotes.set(keyMap.get(keyCode),null);
+        } else if (keyCode == KeyEvent.VK_ENTER) {
+            startPrinting = true;
+            System.out.println("entered!");
         }
         repaint();
     }
