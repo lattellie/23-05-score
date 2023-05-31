@@ -14,7 +14,7 @@ public class PianoPanel extends JPanel {
     private int keytop = 50;
     private int keyheight = 60;
     private int keywidth = 20;
-
+    protected float r = 0;
     private QuickEditor frame;
     public PianoPanel(QuickEditor frame){
         super();
@@ -60,5 +60,10 @@ public class PianoPanel extends JPanel {
             g.fillRect((int) (left - keywidth * ratio / 2 + blackRect[i] * keywidth), keytop, (int) (keywidth * ratio), keyheight*3/5);
             g.setColor(Color.black);
         }
+        g.fillRect(0, getHeight()-keywidth, (int) (getWidth()*r), getHeight());
+    }
+
+    public void setR(float f) {
+        r = f;
     }
 }

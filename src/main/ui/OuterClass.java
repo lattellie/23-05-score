@@ -38,6 +38,7 @@ public class OuterClass extends JFrame implements ActionListener {
     private Notes previousNote = null;
     private Integer curBar = 0;
     private int sixteenthAmount = 16;
+    private QuickEditor quickEditor;
     private
     int[][] appearlist = new int[7][7];
 
@@ -56,7 +57,10 @@ public class OuterClass extends JFrame implements ActionListener {
             @Override
             public void run() {
                 System.out.println(met);
-                SwingUtilities.invokeLater(() -> new QuickEditor(met).setVisible(true));
+                SwingUtilities.invokeLater(() -> {
+                    quickEditor = new QuickEditor(met);
+                    quickEditor.setVisible(true);
+                });
             }
         });
 
@@ -144,9 +148,7 @@ public class OuterClass extends JFrame implements ActionListener {
             } catch (IllegalThreadStateException err) {
                 metro.resume();
             }
-            System.out.println("start");
         } else if (e.getActionCommand() == "pause") {
-            System.out.println("pause");
             metro.suspend();
             Score sc = QuickEditor.getEditedScore(Metronome.getTempo()*4);
             toRobot(sc);
@@ -194,34 +196,35 @@ public class OuterClass extends JFrame implements ActionListener {
             notesArray.add(0,previousNote);
             ArrayList<int[]> keyList = new ArrayList<>();
             String tempString = "";
-            Notes firstNote = notesArray.get(1);
-            System.out.println(firstNote.getAbsKey()+" "+firstNote.getBeat());
-            System.out.print("Enter the correct first beat: (in number of sixteenth): \n");
-            Scanner scanner = new Scanner(System.in);
-            String input = scanner.nextLine();
-            int resetBeat = (int) (firstNote.getBeat()*16);
-            try {
-                int a = Integer.parseInt(input);
-                resetBeat = a;
-            } catch (Exception e) {
-                System.out.println("exception!");
+            if (notesArray.size() > 1) {
+                Notes firstNote = notesArray.get(1);
+                System.out.println(firstNote.getAbsKey()+" "+firstNote.getBeat());
+                System.out.print("Enter the correct first beat: (in number of sixteenth): \n");
+                Scanner scanner = new Scanner(System.in);
+                String input = scanner.nextLine();
+                int resetBeat = (int) (firstNote.getBeat()*16);
+                try {
+                    int a = Integer.parseInt(input);
+                    resetBeat = a;
+                } catch (Exception e) {
+                    System.out.println("exception!");
+                }
+                firstNote.setBeat(resetBeat*0.0625f);
+                System.out.println("set note to beat: " + firstNote.getBeat());
             }
-            firstNote.setBeat(resetBeat*0.0625f);
-            System.out.println("set note to beat: " + firstNote.getBeat());
             for (int i=1; i<notesArray.size(); i++) {
 //                String[] temp =  allKeyToStringOld(notesArray.get(i-1),notesArray.get(i),curBar,appeared);
                 String[] temp =  allKeyToString(notesArray.get(i-1),notesArray.get(i),curBar,appearlist);
                 tempString += temp[0];
                 curBar = Integer.parseInt(temp[1]);
-            }
-            System.out.println(tempString);
-            System.out.println("3 ");
+            };
+            System.out.println("3");
             robot.delay(1000); // Delay before starting to type
-            System.out.println("2 ");
+            System.out.println("2");
             robot.delay(1000);
-            System.out.println("1 ");
+            System.out.println("1");
             robot.delay(1000);
-            System.out.println("ready to print out");
+            System.out.println(tempString+"\n ready to print out");
             previousNote = notesArray.get(notesArray.size()-1);
             actualPrintingOut(tempString, robot);
         } catch (AWTException e) {

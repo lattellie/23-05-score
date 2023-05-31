@@ -36,7 +36,7 @@ public class QuickEditor extends JFrame implements KeyListener {
     private boolean isUpDownPressed = false;
     private static Score score;
 //    private JPanel panel;
-    private PianoPanel pianoPanel;
+    private static PianoPanel pianoPanel;
     protected static boolean startPrinting = false;
     private Synthesizer synth;
     private MidiChannel[] channels;
@@ -48,6 +48,8 @@ public class QuickEditor extends JFrame implements KeyListener {
 //    static Thread piano;
 //    static Thread metro;
     private Metronome met;
+
+    protected JLabel label = new JLabel();
 
     public QuickEditor(Metronome met) {
         super("score editor");
@@ -65,6 +67,7 @@ public class QuickEditor extends JFrame implements KeyListener {
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
 //        panel = new JPanel();
         pianoPanel = new PianoPanel(this);
+        pianoPanel.add(label);
 //        add(panel, BorderLayout.SOUTH);
         add(pianoPanel, BorderLayout.CENTER);
         addKeyListener(this);
@@ -81,7 +84,10 @@ public class QuickEditor extends JFrame implements KeyListener {
         }
     }
 
-
+//    public void displayMessage(String str) {
+//        label.setText(str);
+//        repaint();
+//    }
 
     public ArrayList<Integer> getActivatedNotes() {
         return activatedNotes;
@@ -141,14 +147,10 @@ public class QuickEditor extends JFrame implements KeyListener {
             System.out.println("interrupted exception");
         }
     }
-
-//    public void produceRestSound() {
-//        try {
-//            channels[0].noteOn(8,50);
-//        } catch (Exception e) {
-//            System.out.println("interrupted exception");
-//        }
-//    }
+    public void loadingBar(float f) {
+        pianoPanel.setR(f);
+        repaint();
+    }
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -179,14 +181,6 @@ public class QuickEditor extends JFrame implements KeyListener {
             produceNoteSound(tn);
 //            System.out.println(notesList);
         }
-//        if (!isKeyPressed && keyCode == 32) {
-//            isKeyPressed = true;
-//            Instant currentTimestamp = Instant.now();
-//            TempNote tn = new TempNote(-1, curOctave);
-//            noteList.add(tn);
-//            timeList.add(currentTimestamp);
-//            produceRestSound();
-//        }
         repaint();
 
     }
