@@ -58,6 +58,7 @@ public class QuickEditor extends JFrame implements KeyListener {
         noteList = new ArrayList<>();
         timeList = new ArrayList<>();
         basicConstructor();
+
     }
 
     private void basicConstructor() {
@@ -146,10 +147,6 @@ public class QuickEditor extends JFrame implements KeyListener {
         } catch (Exception e) {
             System.out.println("interrupted exception");
         }
-    }
-    public void loadingBar(float f) {
-        pianoPanel.setR(f);
-        repaint();
     }
 
     @Override

@@ -59,7 +59,7 @@ public class Metronome {
             channels[9].programChange(0,0);
 //            startMetro();
             while (isRunning) {
-                channels[9].noteOn(36, 100);
+                channels[9].noteOn(36, 80);
                 OuterClass.getMetro().sleep((long) 60000/tempo);
                 channels[9].noteOff(36);
             }

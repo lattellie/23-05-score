@@ -331,6 +331,7 @@ public class OuterClass extends JFrame implements ActionListener {
     private String[] noteBeatToString (Notes note, int noteLength, Integer curBar, int[][] appearlist, int ctrlTime) {
         int relKey = note.getRelKey();
         String tempString = "";
+        int beforeBar = curBar;
         curBar += noteLength;
         curBar = checkResetCurBar(curBar, appearlist);
         int oct = note.getOctave()+3;
@@ -343,24 +344,44 @@ public class OuterClass extends JFrame implements ActionListener {
             noteHeightString += "v";
         }
         appearlist[oct][abcedf-1] = flatSharpList[relKey];
+        if (noteLength == 1 || beforeBar % 4 == 0) {
+            tempString = getStringFromZero(noteLength, tempString, noteHeightString);
+        } else if (beforeBar % 2 == 0 || (noteLength == 2 && beforeBar % 4 == 1)){
+            tempString = getStringFromTwo(noteLength, tempString, noteHeightString);
+        } else {
+            tempString = tempString + "3" + noteHeightString;
+            tempString = getStringFromZero(noteLength -1, tempString, "t");
+        }
 
-//        String noteHeightString = noteHeightToString(note, keyNumList[relKey], appearlist, ctrlTime);
+        return new String[]{tempString, String.valueOf(curBar)};
+    }
 
-        if (noteLength <= 3) {
+    private String getStringFromTwo(int noteLength, String tempString, String noteHeightString) {
+        if (noteLength >= 1 && noteLength <= 2) {
+            tempString = tempString + residual[noteLength] + noteHeightString;
+        } else {
+            tempString = tempString + "4" + noteHeightString;
+            tempString = getStringFromZero(noteLength -2, tempString, "t");
+        }
+        return tempString;
+    }
+
+    private String getStringFromZero(int noteLength, String tempString, String noteHeightString) {
+        if (noteLength >= 1 && noteLength <= 3) {
             tempString = tempString + residual[noteLength] + noteHeightString;
         } else if (noteLength <= 7) {
-            tempString = tempString + "5" + noteHeightString + residual[noteLength%4];
+            tempString = tempString + "5" + noteHeightString + residual[noteLength %4];
         } else if (noteLength <= 11) {
-            tempString = tempString + "6" + noteHeightString + residual[noteLength%4];
+            tempString = tempString + "6" + noteHeightString + residual[noteLength %4];
         } else if (noteLength <= 15) {
-            tempString = tempString + "6." + noteHeightString + residual[noteLength%4];
+            tempString = tempString + "6." + noteHeightString + residual[noteLength %4];
         } else if (noteLength == 16) {
             tempString = tempString + "7" + noteHeightString;
         }
-        if (noteLength/4>0 && noteLength%4!=0) {
+        if (noteLength /4>0 && noteLength %4!=0) {
             tempString += "t";
         }
-        return new String[]{tempString, String.valueOf(curBar)};
+        return tempString;
     }
 
     private Integer checkResetCurBar(Integer curBar, int[][] appearlist) {
