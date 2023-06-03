@@ -126,6 +126,7 @@ public class OuterClass extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand()=="start") {
+            curBar = 0;
             if (previousNote == null) {
                 if (clef.getSelectedItem()=="Treble") {
                     previousNote = new Notes("B%10800");
@@ -161,6 +162,7 @@ public class OuterClass extends JFrame implements ActionListener {
             System.exit(0);
         } else if (e.getActionCommand()=="delete") {
             metro.suspend();
+            curBar = 0;
             QuickEditor.getNoteList().clear();
             QuickEditor.getTimeList().clear();
             metro.resume();
@@ -272,7 +274,7 @@ public class OuterClass extends JFrame implements ActionListener {
     private String[] dealWithRest(int newSetNote, Integer n, int r) {
         ArrayList<Integer> splittedRest = new ArrayList<>();
         int l = n+r;// l = n + r
-        if (n==0) {
+        if (n%4==0) {
             splittedRest.addAll(fnForStartZero(r));
         } else if (r == 1) {
             splittedRest.add(1);
